@@ -1,38 +1,46 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
 
-class Migration(DataMigration):
+
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        for l in orm.Locality.objects.all():
-            if not l.name:
-                l.name = None
-                l.save()
-            if not l.postal_code:
-                l.postal_code = None
-                l.save()
+        # Adding field 'Address.extended_address'
+        db.add_column(u'address_address', 'extended_address',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=35, blank=True),
+                      keep_default=False)
+
+
+        # Changing field 'Address.street_address'
+        db.alter_column(u'address_address', 'street_address', self.gf('django.db.models.fields.CharField')(max_length=35))
+
+        # Changing field 'Locality.name'
+        db.alter_column(u'address_locality', 'name', self.gf('address.models.NullCharField')(max_length=35, null=True))
 
     def backwards(self, orm):
-        for l in orm.Locality.objects.all():
-            if not l.name:
-                l.name = ''
-                l.save()
-            if not l.postal_code:
-                l.postal_code = ''
-                l.save()
+        # Deleting field 'Address.extended_address'
+        db.delete_column(u'address_address', 'extended_address')
+
+
+        # Changing field 'Address.street_address'
+        db.alter_column(u'address_address', 'street_address', self.gf('django.db.models.fields.CharField')(max_length=100))
+
+        # Changing field 'Locality.name'
+        db.alter_column(u'address_locality', 'name', self.gf('address.models.NullCharField')(max_length=165, null=True))
 
     models = {
         u'address.address': {
             'Meta': {'ordering': "('locality', 'street_address')", 'object_name': 'Address'},
+            'extended_address': ('django.db.models.fields.CharField', [], {'max_length': '35', 'blank': 'True'}),
             'formatted': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'latitude': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             'locality': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'addresses'", 'to': u"orm['address.Locality']"}),
             'longitude': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
-            'street_address': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
+            'street_address': ('django.db.models.fields.CharField', [], {'max_length': '35', 'blank': 'True'})
         },
         u'address.country': {
             'Meta': {'ordering': "('name',)", 'object_name': 'Country'},
@@ -43,12 +51,12 @@ class Migration(DataMigration):
         u'address.locality': {
             'Meta': {'ordering': "('state', 'postal_code', 'name')", 'unique_together': "(('name', 'state', 'postal_code'),)", 'object_name': 'Locality'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('address.models.NullCharField', [], {'max_length': '165', 'null': 'True', 'blank': 'True'}),
+            'name': ('address.models.NullCharField', [], {'max_length': '35', 'null': 'True', 'blank': 'True'}),
             'postal_code': ('address.models.NullCharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             'state': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'localities'", 'to': u"orm['address.State']"})
         },
         u'address.state': {
-            'Meta': {'ordering': "('country', 'name')", 'unique_together': "(('name', 'code', 'country'),)", 'object_name': 'State'},
+            'Meta': {'ordering': "('country', 'code', 'name')", 'unique_together': "(('name', 'code', 'country'),)", 'object_name': 'State'},
             'code': ('django.db.models.fields.CharField', [], {'max_length': '3', 'blank': 'True'}),
             'country': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'states'", 'to': u"orm['address.Country']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -57,4 +65,3 @@ class Migration(DataMigration):
     }
 
     complete_apps = ['address']
-    symmetrical = True

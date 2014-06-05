@@ -60,7 +60,7 @@ class State(models.Model):
 
 
 class Locality(models.Model):
-    name = NullCharField(max_length=165, blank=True, null=True)
+    name = NullCharField(max_length=35, blank=True, null=True)
     postal_code = NullCharField(max_length=10, blank=True, null=True)
     state = models.ForeignKey(State, related_name='localities')
 
@@ -79,7 +79,8 @@ class Locality(models.Model):
 
 
 class Address(models.Model):
-    street_address = models.CharField(max_length=100, blank=True)
+    street_address = models.CharField(max_length=35, blank=True)
+    extended_address = models.CharField(max_length=35, blank=True)
     locality = models.ForeignKey(Locality, related_name='addresses')
     formatted = models.CharField(max_length=200, blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)
@@ -100,6 +101,7 @@ class Address(models.Model):
     def as_dict(self):
         return dict(
             street_address=self.street_address,
+            extended_address=self.extended_address,
             locality=self.locality.name,
             postal_code=self.locality.postal_code,
             state=self.locality.state.name,
@@ -177,6 +179,7 @@ class AddressField(models.ForeignKey):
             locality = value.get('locality', '')
             postal_code = value.get('postal_code', '')
             street_address = value.get('street_address', '')
+            extended_address = value.get('extended_address', '')
             formatted = value.get('formatted', '')
             latitude = value.get('latitude', None)
             longitude = value.get('longitude', None)
@@ -203,6 +206,7 @@ class AddressField(models.ForeignKey):
             try:
                 address_obj = Address.objects.get(
                     street_address=street_address,
+                    extended_address=extended_address,
                     locality=locality_obj,
                     formatted=formatted,
                     latitude=latitude,
@@ -211,6 +215,7 @@ class AddressField(models.ForeignKey):
             except Address.DoesNotExist:
                 address_obj = Address(
                     street_address=street_address,
+                    extended_address=extended_address,
                     locality=locality_obj,
                     formatted=formatted,
                     latitude=latitude,
@@ -328,13 +333,14 @@ def get_or_create_address(value, geo_accuracy=1):
             locality = value.get('locality', '')
             postal_code = value.get('postal_code', '')
             street_address = value.get('street_address', '')
+            extended_address = value.get('extended_address', '')
             formatted = value.get('formatted', '')
             latitude = value.get('latitude', '')
             longitude = value.get('longitude', '')
 
             # If there is nothing here then just return None.
             if not (country or country_code or state or state_code or
-                    locality or postal_code or street_address or
+                    locality or postal_code or street_address or extended_address or
                     latitude or longitude):
                 return None
 
@@ -360,6 +366,7 @@ def get_or_create_address(value, geo_accuracy=1):
             try:
                 address_obj = Address.objects.get(
                     street_address=street_address,
+                    extended_address=extended_address,
                     locality=locality_obj,
                     formatted=formatted,
                     latitude=latitude,
@@ -368,6 +375,7 @@ def get_or_create_address(value, geo_accuracy=1):
             except Address.DoesNotExist:
                 address_obj = Address(
                     street_address=street_address,
+                    extended_address=extended_address,
                     locality=locality_obj,
                     formatted=formatted,
                     latitude=latitude,

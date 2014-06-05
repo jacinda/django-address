@@ -73,7 +73,7 @@ class Migration(SchemaMigration):
             'state': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'localities'", 'to': u"orm['address.State']"})
         },
         u'address.state': {
-            'Meta': {'ordering': "('country', 'name')", 'unique_together': "(('name', 'country'),)", 'object_name': 'State'},
+            'Meta': {'ordering': "('country', 'name')", 'unique_together': "(('name', 'code', 'country'),)", 'object_name': 'State'},
             'code': ('django.db.models.fields.CharField', [], {'max_length': '3', 'blank': 'True'}),
             'country': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'states'", 'to': u"orm['address.Country']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
