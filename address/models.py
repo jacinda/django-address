@@ -60,7 +60,7 @@ class State(models.Model):
 
 
 class Locality(models.Model):
-    name = NullCharField(max_length=35, blank=True, null=True)
+    name = NullCharField(max_length=165, blank=True, null=True)
     postal_code = NullCharField(max_length=10, blank=True, null=True)
     state = models.ForeignKey(State, related_name='localities')
 
@@ -79,7 +79,7 @@ class Locality(models.Model):
 
 
 class Address(models.Model):
-    street_address = models.CharField(max_length=35, blank=True)
+    street_address = models.CharField(max_length=100, blank=True)
     extended_address = models.CharField(max_length=35, blank=True)
     locality = models.ForeignKey(Locality, related_name='addresses')
     formatted = models.CharField(max_length=200, blank=True, null=True)
